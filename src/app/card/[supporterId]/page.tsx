@@ -27,6 +27,20 @@ type SupporterView = {
 };
 
 async function fetchSupporter(id: string, fallbackNation?: string): Promise<SupporterView | null> {
+  // Deterministic demo poster (join preview flow + /card/demo). Handle it
+  // before any DB lookup so it renders whether or not Supabase is configured,
+  // and so the non-UUID id "demo" never hits the uuid `id` column.
+  if (id === "demo") {
+    return {
+      id: "demo",
+      nickname: "Supporter",
+      city: null,
+      referral_code: "FANMAP26",
+      supporter_number: 1,
+      nation_slug: getTeam(fallbackNation ?? "")?.slug ?? "turkiye"
+    };
+  }
+
   const client = getPublicClient();
   if (!client) {
     // No DB — show a deterministic preview so the page is still beautiful.
