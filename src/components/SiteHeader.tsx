@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MapLink } from "./MapLink";
+import { ChooseNationLink } from "./ChooseNationLink";
 
 export function SiteHeader() {
   return (
@@ -23,9 +24,9 @@ export function SiteHeader() {
           <MapLink className="hidden sm:inline-flex btn-ghost !py-2 !px-4 text-xs">
             View map
           </MapLink>
-          <Link href="/join" className="btn-primary !py-2 !px-4 text-xs">
+          <ChooseNationLink className="btn-primary !py-2 !px-4 text-xs">
             Choose your nation
-          </Link>
+          </ChooseNationLink>
         </div>
       </div>
     </header>

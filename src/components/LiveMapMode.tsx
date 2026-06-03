@@ -22,6 +22,7 @@ export function LiveMapMode({ nations, open, onClose }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [expanding, setExpanding] = useState(false); // growth surge only via Choose nation
   const [chooser, setChooser] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false); // mobile: panel collapsed by default
 
   // Focus a nation (map click / panel) — no expansion preview.
   const focusNation = (slug: string) => {
@@ -64,8 +65,22 @@ export function LiveMapMode({ nations, open, onClose }: Props) {
           </div>
         </div>
 
-        {/* Panel — inset inward so it's balanced and off the scrollbar */}
-        <div className="absolute inset-x-0 bottom-0 sm:inset-x-auto sm:top-4 sm:bottom-4 sm:right-6 sm:w-[330px] glass-strong border-t border-line/60 sm:border sm:rounded-2xl p-4 sm:p-5 overflow-y-auto max-h-[52%] sm:max-h-none">
+        {/* Panel. Mobile: a bottom sheet, collapsed (~34%) by default so the map
+            stays the main visual — tap the handle / "Show more" to expand to the
+            full list. Desktop: full side panel, unchanged (collapse is mobile-only). */}
+        <div
+          className={`absolute inset-x-0 bottom-0 sm:inset-x-auto sm:top-4 sm:bottom-4 sm:right-6 sm:w-[330px] glass-strong border-t border-line/60 sm:border rounded-t-2xl sm:rounded-2xl px-4 pb-4 pt-1 sm:p-5 overflow-y-auto sm:max-h-none transition-[max-height] duration-300 ease-out ${panelOpen ? "max-h-[78%]" : "max-h-[34%]"}`}
+        >
+          {/* Mobile grab handle / expand toggle */}
+          <button
+            type="button"
+            onClick={() => setPanelOpen((o) => !o)}
+            aria-label={panelOpen ? "Collapse panel" : "Expand panel"}
+            className="sm:hidden w-full flex justify-center py-2"
+          >
+            <span className="h-1.5 w-12 rounded-full bg-white/25" />
+          </button>
+
           {sel ? (
             <div className="mb-4">
               <div className="flex items-center gap-3">
@@ -95,8 +110,10 @@ export function LiveMapMode({ nations, open, onClose }: Props) {
             {ranked.slice(0, 8).map((r, i) => {
               const team = getTeam(r.slug);
               if (!team) return null;
+              // Mobile collapsed shows only the top 3; desktop always shows all.
+              const hideOnMobile = i >= 3 && !panelOpen;
               return (
-                <li key={r.slug}>
+                <li key={r.slug} className={hideOnMobile ? "hidden sm:list-item" : undefined}>
                   <button
                     type="button"
                     onClick={() => focusNation(r.slug)}
@@ -112,6 +129,15 @@ export function LiveMapMode({ nations, open, onClose }: Props) {
               );
             })}
           </ul>
+
+          {/* Mobile show more / show less */}
+          <button
+            type="button"
+            onClick={() => setPanelOpen((o) => !o)}
+            className="sm:hidden mt-2 w-full text-xs text-white/55 py-2"
+          >
+            {panelOpen ? "Show less ▾" : "Show more ▴"}
+          </button>
         </div>
       </div>
 

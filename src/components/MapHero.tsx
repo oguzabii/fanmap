@@ -19,14 +19,19 @@ export function MapHero({ nations, preview }: { nations: NationWithDelta[]; prev
   const team = selected ? getTeam(selected) : null;
 
   useEffect(() => {
-    const open = () => setLive(true);
-    window.addEventListener("fanmap:open-map", open);
+    const openMap = () => setLive(true);
+    const openChooser = () => setChooser(true);
+    window.addEventListener("fanmap:open-map", openMap);
+    window.addEventListener("fanmap:choose-nation", openChooser);
     try {
       if (new URLSearchParams(window.location.search).get("map") === "1") setLive(true);
     } catch {
       /* ignore */
     }
-    return () => window.removeEventListener("fanmap:open-map", open);
+    return () => {
+      window.removeEventListener("fanmap:open-map", openMap);
+      window.removeEventListener("fanmap:choose-nation", openChooser);
+    };
   }, []);
 
   return (
@@ -39,8 +44,8 @@ export function MapHero({ nations, preview }: { nations: NationWithDelta[]; prev
 
       <div className="container-wide pt-8 lg:pt-14 pb-12">
         <div className="grid lg:grid-cols-[0.86fr_1.14fr] gap-8 lg:gap-6 items-center">
-          {/* Copy column */}
-          <div className="order-2 lg:order-1 animate-rise">
+          {/* Copy column — first on mobile so the CTA sits above the fold. */}
+          <div className="order-1 animate-rise">
             <div className="flex flex-wrap items-center gap-2">
               <div className="chip">
                 <span className="size-1.5 rounded-full bg-neon-cyan animate-pulseGlow" /> Independent fan map · 2026
@@ -61,7 +66,21 @@ export function MapHero({ nations, preview }: { nations: NationWithDelta[]; prev
               Choose your nation. Every supporter expands the flag — your homeland grows across the
               world map.
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            {/* Mobile selected-state CTA (desktop keeps the buttons below + map overlay). */}
+            {selected && team && (
+              <div className="mt-6 lg:hidden">
+                <div className="chip">Team {team.name} selected</div>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <Link href={`/join?nation=${team.slug}`} className="btn-primary text-base !py-4 !px-7">
+                    Claim your free poster <span aria-hidden>→</span>
+                  </Link>
+                  <button type="button" onClick={() => setChooser(true)} className="btn-ghost text-base !py-4 !px-7">
+                    Change nation
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className={`mt-6 flex-wrap items-center gap-3 ${selected ? "hidden lg:flex" : "flex"}`}>
               <button type="button" onClick={() => setChooser(true)} className="btn-primary text-base !py-4 !px-7">
                 Choose your nation <span aria-hidden>→</span>
               </button>
@@ -83,7 +102,7 @@ export function MapHero({ nations, preview }: { nations: NationWithDelta[]; prev
 
           {/* Map column — open & cinematic, edges fade into the page (no card frame).
               Box matches the world's 2:1 aspect so the WHOLE world fits (no crop). */}
-          <div className="order-1 lg:order-2 relative lg:-mr-6 xl:-mr-14">
+          <div className="order-2 relative lg:-mr-6 xl:-mr-14">
             <div className="relative aspect-[2/1] w-full">
               {/* the map itself, masked so it dissolves into the background */}
               <div
@@ -133,8 +152,8 @@ export function MapHero({ nations, preview }: { nations: NationWithDelta[]; prev
                           : "Viewing this nation's territory — claim your poster to grow it."}
                       </div>
                     </div>
-                    <Link href={`/join?nation=${team.slug}`} className="btn-primary !py-2 !px-3 text-xs shrink-0">
-                      Claim poster →
+                    <Link href={`/join?nation=${team.slug}`} className="btn-primary !py-2 !px-3 text-xs shrink-0 whitespace-nowrap">
+                      Claim your free poster →
                     </Link>
                     <button
                       type="button"
